@@ -23,15 +23,8 @@ def train(model,trainloader,epochs,optimizer,criterion,device):
             optimizer.zero_grad()
             output,_ = model(src,tgt)
             
-            # Ignore <SOS> token in each sequence
             tgt = tgt[:,1:]
             
-            # Print the 1st sequnece in output by taking the argmax  and also print the 1st sequence in target
-            # print('Output:', output.argmax(2)[0])
-            # print('Target:', tgt[0])
-            
-            # print(predict(model,'fe 29 2090',input_vocab,output_vocab,output_vocab_inv,max_output_len,device))
-           
             output_dim = output.shape[-1]
             output = output.reshape(-1,output_dim)
             tgt = tgt.reshape(-1)
@@ -58,9 +51,7 @@ def evaluate(model,validloader,criterion,device):
             src = src.to(device)
             tgt = tgt.to(device)
             output,_ = model(src,tgt,0) #turn off teacher forcing
-            
-           
-            
+                        
             output_dim = output.shape[-1]
             output = output.reshape(-1,output_dim)
             tgt = tgt[:,1:]
@@ -74,6 +65,7 @@ def predict(model,src,src_vocab,tgt_vocab,tgt_inv_vocab,max_len,device):
     
  
     src = torch.tensor([src_vocab.get(char,src_vocab['<UNK>']) for char in src]).unsqueeze(0).to(device)
+    
     tgt = [tgt_vocab['<SOS>']]+[tgt_vocab['<PAD>']]*max_len+[tgt_vocab['<EOS>']]
     tgt = torch.tensor(tgt).unsqueeze(0).to(device)
     
@@ -130,7 +122,7 @@ def attention_visualization(model,src,input_vocab,output_vocab,output_vocab_inv,
     
     attention_scores = attention_scores.squeeze(0).cpu().detach().numpy() # [tgt_len, src_len]
     
-    print(attention_scores.shape)
+   
     
     print('Source:', src)
     print('Predicted:', "".join(outputs))
@@ -142,10 +134,6 @@ def attention_visualization(model,src,input_vocab,output_vocab,output_vocab_inv,
     ax.set_xticks(np.arange(len(src_tokens)))
     ax.set_yticks(np.arange(len(tgt_tokens)))
   
-                               
-    
-    print('Source tokens:', src_tokens) 
-    print('Target tokens:', tgt_tokens)
     
     ax.set_xticklabels(src_tokens, rotation=90,)
     ax.set_yticklabels(tgt_tokens)
