@@ -4,6 +4,18 @@ from collections import defaultdict
 
 def build_vocab(file_path):
     
+    """
+    args:
+    file_path: path to the dataset file
+    
+    returns:
+    input_vocab: dictionary containing character to index mapping for input language
+    output_vocab: dictionary containing character to index mapping for output language
+    input_vocab_inv: dictionary containing index to character mapping for input language
+    output_vocab_inv: dictionary containing index to character mapping for output language
+    
+    """
+    
     input_vocab = defaultdict(lambda:len(input_vocab))
     output_vocab = defaultdict(lambda:len(output_vocab))
     
@@ -36,4 +48,5 @@ def build_vocab(file_path):
     output_vocab_inv = {v:k for k,v in output_vocab.items()}
     
     return input_vocab, output_vocab, input_vocab_inv, output_vocab_inv
+
 
