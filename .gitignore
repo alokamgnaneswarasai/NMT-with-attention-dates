@@ -1,0 +1,7 @@
+# Remove all numpy,csv, and pkl files
+
+.ipynb_checkpoints/
+*.csv
+*.npy
+*.pkl
+
