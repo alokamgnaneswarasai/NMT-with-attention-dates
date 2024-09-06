@@ -109,6 +109,8 @@ class Seq2Seq(nn.Module):
         
         outputs = torch.zeros(batch_size, target_len-1, target_vocab_size).to(self.device)
         
+        attention_scores = torch.zeros(batch_size, target_len-1, input.shape[1]).to(self.device)
+        
         
         encoder_outputs, hidden = self.encoder(input) 
         
@@ -116,7 +118,9 @@ class Seq2Seq(nn.Module):
         
         for t in range(1, target_len):
             
-            output, hidden, _ = self.decoder(x, hidden, encoder_outputs)
+            output, hidden, attention_weights = self.decoder(x, hidden, encoder_outputs)
+            
+            attention_scores[:,t-1] = attention_weights
             
             outputs[:,t-1] = output 
             
@@ -126,6 +130,6 @@ class Seq2Seq(nn.Module):
             
             # x = target[:,t] if teacher_force else top1 # if teacher_force is True, we use the actual target token, else we use the predicted token
             x = top1 # we are not using teacher forcing
-        return outputs
+        return outputs, attention_scores
     
         

@@ -5,6 +5,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FixedLocator
 
 def train(model,trainloader,epochs,optimizer,criterion,device):
     
@@ -18,7 +21,7 @@ def train(model,trainloader,epochs,optimizer,criterion,device):
             src = src.to(device)
             tgt = tgt.to(device)
             optimizer.zero_grad()
-            output = model(src,tgt)
+            output,_ = model(src,tgt)
             
             # Ignore <SOS> token in each sequence
             tgt = tgt[:,1:]
@@ -54,7 +57,7 @@ def evaluate(model,validloader,criterion,device):
         for src,tgt in validloader:
             src = src.to(device)
             tgt = tgt.to(device)
-            output = model(src,tgt,0) #turn off teacher forcing
+            output,_ = model(src,tgt,0) #turn off teacher forcing
             
            
             
@@ -74,7 +77,7 @@ def predict(model,src,src_vocab,tgt_vocab,tgt_inv_vocab,max_len,device):
     tgt = [tgt_vocab['<SOS>']]+[tgt_vocab['<PAD>']]*max_len+[tgt_vocab['<EOS>']]
     tgt = torch.tensor(tgt).unsqueeze(0).to(device)
     
-    outputs = model(src,tgt,0)
+    outputs,attention_scores = model(src,tgt,0)
     
     outputs = outputs.squeeze(0)
    
@@ -85,7 +88,9 @@ def predict(model,src,src_vocab,tgt_vocab,tgt_inv_vocab,max_len,device):
             if output == tgt_vocab['<EOS>']:
                 break
             decoder_outputs.append(tgt_inv_vocab[output])
-    return "".join(decoder_outputs)
+            # decoder_outputs.append(output)
+    # return "".join(decoder_outputs)
+    return decoder_outputs,attention_scores
 
 
 
@@ -112,8 +117,53 @@ model = Seq2Seq(encoder, decoder, device).to(device)
 criterion = nn.CrossEntropyLoss(ignore_index = output_vocab['<PAD>'])
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-train(model,trainloader,num_epochs,optimizer,criterion,device)
+# train(model,trainloader,num_epochs,optimizer,criterion,device)
 
+model.load_state_dict(torch.load('Models/model.pth'))
+
+def attention_visualization(model,src,input_vocab,output_vocab,output_vocab_inv,max_output_len,device):
+    outputs,attention_scores = predict(model,src,input_vocab,output_vocab,output_vocab_inv,max_output_len,device)
+    src_tokens = [char for char in src]
+    tgt_tokens = outputs
+    
+    #convert attention scores to numpy
+    
+    attention_scores = attention_scores.squeeze(0).cpu().detach().numpy() # [tgt_len, src_len]
+    
+    print(attention_scores.shape)
+    
+    print('Source:', src)
+    print('Predicted:', "".join(outputs))
+    
+    
+    fig, ax = plt.subplots(figsize=(12,12))
+    cax=ax.matshow(attention_scores, cmap='bone')
+    
+    ax.set_xticks(np.arange(len(src_tokens)))
+    ax.set_yticks(np.arange(len(tgt_tokens)))
+  
+                               
+    
+    print('Source tokens:', src_tokens) 
+    print('Target tokens:', tgt_tokens)
+    
+    ax.set_xticklabels(src_tokens, rotation=90,)
+    ax.set_yticklabels(tgt_tokens)
+    
+    ax.set_xlabel('Input Sequence')
+    ax.set_ylabel('Output Sequence')
+    
+    fig.colorbar(cax)
+    
+    plt.show()
+    
+    #save the plot
+    
+    plt.savefig('plots/attention4.png')
+    
+    
+
+attention_visualization(model,'29 February 2020',input_vocab,output_vocab,output_vocab_inv,max_output_len,device)
 
 
 
