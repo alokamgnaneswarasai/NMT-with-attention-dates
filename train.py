@@ -40,7 +40,7 @@ def train(model,trainloader,epochs,optimizer,criterion,device):
         print(f'Validation Loss: {evaluate(model,validloader,criterion,device):.3f}')
         
     # Save the model in Models folder
-    torch.save(model.state_dict(), 'Models/model.pth')
+    torch.save(model.state_dict(), 'Models/model1.pth')
     
 
 def evaluate(model,validloader,criterion,device):
@@ -104,8 +104,8 @@ batch_size = 32
 embedding_size = 128
 enc_hidden_size = 128
 dec_hidden_size = 2*128
-learning_rate = 0.001
-num_epochs = 30
+learning_rate = 0.0015
+num_epochs = 10
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 trainloader = get_dataloader('Data/train.txt', input_vocab, output_vocab, max_input_len, max_output_len, batch_size)
 validloader = get_dataloader('Data/validation.txt', input_vocab, output_vocab, max_input_len, max_output_len, batch_size)
