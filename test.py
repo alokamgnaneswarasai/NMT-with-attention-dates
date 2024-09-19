@@ -7,8 +7,6 @@ input_vocab_size = len(input_vocab)
 output_vocab_size = len(output_vocab)
 max_input_len = 20
 max_output_len = 10
-max_input_len = 20
-max_output_len = 10
 batch_size = 32
 embedding_size = 128
 enc_hidden_size = 128
@@ -85,9 +83,12 @@ def calculate_all_errors(actual_outputs, predicted_outputs):
     mismatch_error = 0
     position_errors = [0]*10
     
+    less_than_10 = 0
+    
     for actual, predicted in zip(actual_outputs, predicted_outputs):
         
         if len(actual) != 10 or len(predicted) != 10:
+            less_than_10 += 1
             continue
         
         exact_match_error += 1 if actual == predicted else 0
@@ -99,6 +100,7 @@ def calculate_all_errors(actual_outputs, predicted_outputs):
     lowest_error = position_errors.index(min(position_errors)) + 1
     
     print("Excat matches ", exact_match_error)
+    print("Less than 10 ", less_than_10)
         
     exact_match_error = (exact_match_error/len(actual_outputs))*100
     mismatch_error = (mismatch_error/(len(actual_outputs)*10))*100

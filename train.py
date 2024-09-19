@@ -46,19 +46,27 @@ def train(model,trainloader,epochs,optimizer,criterion,device):
 def evaluate(model,validloader,criterion,device):
     model.eval()
     epoch_loss = 0
+    accuracy = 0 
+    total = 0
     with torch.no_grad():
         for src,tgt in validloader:
             src = src.to(device)
             tgt = tgt.to(device)
-            output,_ = model(src,tgt,0) #turn off teacher forcing
-                        
+            output,_ = model(src,tgt,0) #turn off teacher forcing  
             output_dim = output.shape[-1]
             output = output.reshape(-1,output_dim)
             tgt = tgt[:,1:]
             tgt = tgt.reshape(-1)
-            
             loss = criterion(output,tgt)
+            
+           # check if all the characters are correct , if yes then increment the accuracy
+            # print(torch.argmax(output,dim=1).shape,tgt.shape)
+            accuracy += torch.sum(torch.argmax(output,dim=1) == tgt).item()
+            total += tgt.shape[0]
             epoch_loss += loss.item()
+            
+    print(f'Validation Accuracy: {accuracy/total:.3f}')
+        
     return epoch_loss/len(validloader)
 
 def predict(model,src,src_vocab,tgt_vocab,tgt_inv_vocab,max_len,device):
@@ -72,7 +80,8 @@ def predict(model,src,src_vocab,tgt_vocab,tgt_inv_vocab,max_len,device):
     outputs,attention_scores = model(src,tgt,0)
     
     outputs = outputs.squeeze(0)
-   
+    
+    print(outputs.shape)
     decoder_outputs = []
     for output in outputs:
             output = output.argmax(0).item()
@@ -96,7 +105,7 @@ embedding_size = 128
 enc_hidden_size = 128
 dec_hidden_size = 2*128
 learning_rate = 0.001
-num_epochs = 10
+num_epochs = 30
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 trainloader = get_dataloader('Data/train.txt', input_vocab, output_vocab, max_input_len, max_output_len, batch_size)
 validloader = get_dataloader('Data/validation.txt', input_vocab, output_vocab, max_input_len, max_output_len, batch_size)
@@ -109,9 +118,9 @@ model = Seq2Seq(encoder, decoder, device).to(device)
 criterion = nn.CrossEntropyLoss(ignore_index = output_vocab['<PAD>'])
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-# train(model,trainloader,num_epochs,optimizer,criterion,device)
+train(model,trainloader,num_epochs,optimizer,criterion,device)
 
-model.load_state_dict(torch.load('Models/model.pth'))
+model.load_state_dict(torch.load('Models/model1.pth'))
 
 def attention_visualization(model,src,input_vocab,output_vocab,output_vocab_inv,max_output_len,device):
     outputs,attention_scores = predict(model,src,input_vocab,output_vocab,output_vocab_inv,max_output_len,device)
@@ -151,7 +160,7 @@ def attention_visualization(model,src,input_vocab,output_vocab,output_vocab_inv,
     
     
 
-attention_visualization(model,'29 February 2020',input_vocab,output_vocab,output_vocab_inv,max_output_len,device)
+attention_visualization(model,'29 March 2022',input_vocab,output_vocab,output_vocab_inv,max_output_len,device)
 
 
 
