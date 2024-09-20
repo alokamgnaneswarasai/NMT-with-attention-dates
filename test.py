@@ -17,7 +17,7 @@ encoder = Encoder(input_vocab_size, embedding_size, enc_hidden_size)
 decoder = Decoder(output_vocab_size, embedding_size, enc_hidden_size, dec_hidden_size)
 model = Seq2Seq(encoder, decoder, device).to(device)
 
-model.load_state_dict(torch.load('Models/model.pth'))
+model.load_state_dict(torch.load('Models/model4.pth'))
 
 # Now load validation.txt  where each line is a pair of input and output date separated by a comma, so give input to the predict function and compare whether the output is correct or not
 def predict(model,src,src_vocab,tgt_vocab,tgt_inv_vocab,max_len,device):

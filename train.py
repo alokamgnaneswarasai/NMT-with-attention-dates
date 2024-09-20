@@ -40,7 +40,7 @@ def train(model,trainloader,epochs,optimizer,criterion,device):
         print(f'Validation Loss: {evaluate(model,validloader,criterion,device):.3f}')
         
     # Save the model in Models folder
-    torch.save(model.state_dict(), 'Models/model1.pth')
+    torch.save(model.state_dict(), 'Models/model4.pth')
     
 
 def evaluate(model,validloader,criterion,device):
@@ -98,14 +98,14 @@ def predict(model,src,src_vocab,tgt_vocab,tgt_inv_vocab,max_len,device):
 input_vocab, output_vocab, input_vocab_inv,output_vocab_inv = build_vocab('Data/train.txt')
 input_vocab_size = len(input_vocab)
 output_vocab_size = len(output_vocab)
-max_input_len = 20
+max_input_len = 16
 max_output_len = 10
 batch_size = 32
-embedding_size = 128
-enc_hidden_size = 128
-dec_hidden_size = 2*128
+embedding_size = 128 # 128 used for model with accuracy 0.88
+enc_hidden_size = 128  #use 128 for model with accuracy 0.88
+dec_hidden_size = 2*128 #use 2*128 for model with accuracy 0.88
 learning_rate = 0.0015
-num_epochs = 10
+num_epochs = 3 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 trainloader = get_dataloader('Data/train.txt', input_vocab, output_vocab, max_input_len, max_output_len, batch_size)
 validloader = get_dataloader('Data/validation.txt', input_vocab, output_vocab, max_input_len, max_output_len, batch_size)
@@ -120,7 +120,7 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 train(model,trainloader,num_epochs,optimizer,criterion,device)
 
-model.load_state_dict(torch.load('Models/model1.pth'))
+model.load_state_dict(torch.load('Models/model4.pth'))
 
 def attention_visualization(model,src,input_vocab,output_vocab,output_vocab_inv,max_output_len,device):
     outputs,attention_scores = predict(model,src,input_vocab,output_vocab,output_vocab_inv,max_output_len,device)
